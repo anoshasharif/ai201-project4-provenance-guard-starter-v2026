@@ -42,64 +42,36 @@ Two things worth knowing before you pick numbers:
   a **miss**.
 
 ---
-## 1.
+## 1. Limit false positives for human writing
 
-<!-- Your criterion. It must name a number. -->
+Of 10 pieces of writing known to be human-written, no more than 1 should be incorrectly labeled as high-confidence AI-generated in each evaluation trial.
 
-
-
-**Why this target:**
-
-
-
+**Why this target:** 
+I chose a maximum false-positive rate of 10% because falsely accusing a real writer of using AI can damage their credibility. The system should prioritize protecting genuine writers while acknowledging that AI detection is not always accurate.
 ---
 
-## 2.
+## 2. Maintain a measurable score difference
+Across a test set containing 10 clearly human-written and 10 clearly AI-generated pieces, the average AI-likelihood confidence score for AI-generated writing should be at least 0.30 higher than the average score for human-written writing in each evaluation trial.
 
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-
-
-
+**Why this target:** I chose a minimum difference of 0.30 because the system should demonstrate a meaningful ability to distinguish between human and AI writing. This target encourages measurable separation without expecting perfect detection.
 ---
 
-## 3.
+## 3. Ensure all three labels are reachable
+All 3 of the 3 required labels—high-confidence AI, high-confidence human, and unsure—must be reachable through valid confidence scores between 0 and 1. Every score within that range must map to exactly one label.
 
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-
-
-
+**Why this target:** I chose complete label coverage because the system must communicate uncertainty rather than forcing every submission into either the human or AI category. All three labels should function correctly.
 ---
 
-## 4.
+## 4. Ensure appeals are processed successfully
+100% of valid appeals submitted with an existing content_id and nonempty reasoning must change the submission's status to under_review, create an appeal record in the audit log, and return a confirmation response.
 
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-
-
-
+**Why this target:** I chose 100% because the appeal process is essential for protecting writers who may have been incorrectly classified. Unlike AI detection, recording an appeal is a system operation that should work reliably every time. 
 ---
 
-## 5.
+## 5. Reject invalid or excessively large submissions
+100% of submissions containing missing text, empty or whitespace-only text, or text exceeding 10,000 characters must be rejected with an HTTP 400 response. These invalid submissions must not be processed by the detector.
 
-<!-- Your criterion. -->
-
-
-
-**Why this target:**
-
-
-
+**Why this target:** I chose a 10,000-character limit to allow reasonably lengthy writing submissions while preventing excessively large inputs from consuming unnecessary resources. Rejecting missing or empty text also prevents the system from analyzing invalid submissions.
 ---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
