@@ -30,6 +30,7 @@ from flask import Flask, jsonify, request
 
 import audit
 import config
+from detector import model_signal
 
 app = Flask(__name__)
 
@@ -201,15 +202,30 @@ def submit():
     """
     payload = request.get_json(silent=True) or {}
 
-    # TODO: delete this and build the route.
+    text = payload.get("text", "")
+    creator_id = payload.get("creator_id", "")
+
+    score = model_signal(text)
+    content_id = str(uuid.uuid4())
+
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess="unsure",
+        model_score=score,
+        style_score=0.0,
+        combined_score=None,
+        label="Unable to determine authorship."
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
-        "you_sent": {
-            "text_length": len(payload.get("text", "")),
-            "creator_id": payload.get("creator_id"),
-        },
-    }), 501
+        "content_id": content_id,
+        "guess": "unsure",
+        "confidence": 0.5,
+        "label": "Unable to determine authorship.",
+        "model_score": score,
+        "style_score": 0.0
+    }), 200
 
 
 @app.post("/appeal")
