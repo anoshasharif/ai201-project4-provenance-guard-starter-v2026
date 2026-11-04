@@ -114,22 +114,28 @@
 <!-- One submission and one appeal, pasted as text: the request, the response,
      and the log entries. -->
 
+
 **A submission**
 
-<!-- The response needs content_id, guess, confidence, label, AND both
-     signal scores - model_score and style_score. Unit 8's tools read those
-     two off the response, so leaving them out costs you next unit's
-     diagnostics. -->
+Request (PowerShell):
 
-```bash
-$ curl -X POST http://127.0.0.1:5000/submit \
-  -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+```powershell
+curl.exe -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" -d '{\"text\": \"Artificial intelligence has transformed modern society by improving efficiency, automating repetitive tasks, and providing innovative solutions across industries. These advancements continue to shape the future of technology and communication.\", \"creator_id\": \"test-user\"}'
 ```
+
+Response:
 
 ```json
-
+{
+  "confidence": 0.5,
+  "content_id": "57b3748a-3f50-40d7-a8ec-f439794ec82c",
+  "guess": "unsure",
+  "label": "Unable to determine authorship.",
+  "model_score": 0.6607,
+  "style_score": 0.0
+}
 ```
+
 
 **An appeal**
 
@@ -145,12 +151,28 @@ $ curl -X POST http://127.0.0.1:5000/appeal \
 
 **What the log shows afterwards**
 
-```bash
-$ curl "http://127.0.0.1:5000/log?limit=3"
+
+```powershell
+curl.exe http://127.0.0.1:5000/log
 ```
 
 ```json
-
+{
+  "count": 1,
+  "entries": [
+    {
+      "combined_score": null,
+      "content_id": "57b3748a-3f50-40d7-a8ec-f439794ec82c",
+      "creator_id": "test-user",
+      "guess": "unsure",
+      "label": "Unable to determine authorship.",
+      "model_score": 0.6607,
+      "status": "decided",
+      "style_score": 0.0,
+      "timestamp": "2026-11-04T05:13:47+00:00"
+    }
+  ]
+}
 ```
 
 ---
