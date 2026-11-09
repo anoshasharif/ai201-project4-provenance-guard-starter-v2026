@@ -32,7 +32,7 @@ import audit
 import config
 from detector import model_signal
 from stylometry import style_signal
-from scoring import combine_signals
+from scoring import combine_signals, score_to_label
 
 app = Flask(__name__)
 
@@ -210,24 +210,25 @@ def submit():
     model_score = model_signal(text)
     style_score = style_signal(text)
     combined_score = combine_signals(model_score, style_score)
+    guess, label = score_to_label(combined_score)
 
     content_id = str(uuid.uuid4())
 
     audit.log_decision(
         content_id=content_id,
         creator_id=creator_id,
-        guess="unsure",
+        guess=guess,
         model_score=model_score,
         style_score=style_score,
         combined_score=combined_score,
-        label="Unable to determine authorship."
+        label=label
     )
 
     return jsonify({
         "content_id": content_id,
-        "guess": "unsure",
+        "guess": guess,
         "confidence": 0.5,
-        "label": "Unable to determine authorship.",
+        "label": label,
         "model_score": model_score,
         "style_score": style_score,
         "combined_score": combined_score
@@ -256,12 +257,39 @@ def appeal():
     """
     payload = request.get_json(silent=True) or {}
 
-    # TODO: delete this and build the route.
+    content_id = payload.get("content_id", "")
+    reasoning = payload.get("reasoning", "")
+
+    if not content_id or not isinstance(content_id, str):
+        return jsonify({"error": "A valid content_id is required."}), 400
+
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        return jsonify({"error": "Please provide a reason for your appeal."}), 400
+
+    entries = audit.entries_for(content_id)
+
+    if not entries:
+        return jsonify({"error": "Content ID not found."}), 404
+
+    original = next(
+        (entry for entry in entries if entry.get("status") == "decided"),
+        None
+    )
+
+    if original is None:
+        return jsonify({"error": "Original decision not found."}), 404
+
+    appeal_entry = audit.log_appeal(
+        content_id=content_id,
+        creator_id=original.get("creator_id", ""),
+        reasoning=reasoning.strip()
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
+        "content_id": content_id,
+        "status": "under_review",
+        "message": "Your appeal has been received and is now under review."
+    }), 200
 
 
 # ── Already works ─────────────────────────────────────────────────────────────
