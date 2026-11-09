@@ -64,8 +64,20 @@ def sentence_length_spread(text: str) -> float:
     `stdev` raises on fewer than two values. Decide what that should return
     before the attack set decides for you.
     """
-    # TODO: replace this
-    return 0.0
+    
+    lengths = [len(words(sentence)) for sentence in sentences(text)]
+
+    if len(lengths) < 2:
+        return 0.0
+
+    average = statistics.mean(lengths)
+
+    if average == 0:
+        return 0.0
+
+    spread = statistics.stdev(lengths) / average
+
+    return round(spread, 4)
 
 
 def type_token_ratio(text: str) -> float:
@@ -80,8 +92,15 @@ def type_token_ratio(text: str) -> float:
     directly comparable on it, and if your test inputs vary a lot in length,
     that alone can look like a signal.
     """
-    # TODO: replace this
-    return 0.0
+    word_list = words(text)
+
+    if not word_list:
+        return 0.0
+
+    unique_words = len(set(word_list))
+    total_words = len(word_list)
+
+    return round(unique_words / total_words, 4)
 
 
 def punctuation_density(text: str) -> float:
@@ -94,8 +113,17 @@ def punctuation_density(text: str) -> float:
         more interesting than full stops, because they vary more between
         writers.
     """
-    # TODO: replace this
-    return 0.0
+    
+    if not text.strip():
+        return 0.0
+
+    punctuation_marks = re.findall(r"[.,!?;:—\-]", text)
+
+    total_characters = len(text)
+
+    density = len(punctuation_marks) / total_characters
+
+    return round(density, 4)
 
 
 # ── Combining them ───────────────────────────────────────────────────────────
@@ -122,8 +150,30 @@ def style_signal(text: str) -> float:
     you trust it. Plain and ordinary, not formal: formal prose reads as *human*
     to signal one, and it is plain writing that gets accused.
     """
-    # TODO: replace this
-    return 0.5
+    if not words(text):
+        return 0.5
+
+    spread = sentence_length_spread(text)
+    diversity = type_token_ratio(text)
+    punctuation = punctuation_density(text)
+
+    sentence_count = len(sentences(text))
+
+    if sentence_count < 2:
+        spread_score = 0.5
+    else:
+        spread_score = 1.0 - min(spread, 1.0)
+
+    diversity_score = 1.0 - diversity
+    punctuation_score = 1.0 - min(punctuation / 0.1, 1.0)
+
+    score = (
+        0.4 * spread_score
+        + 0.4 * diversity_score
+        + 0.2 * punctuation_score
+    )
+
+    return round(min(max(score, 0.0), 1.0), 4)
 
 
 if __name__ == "__main__":

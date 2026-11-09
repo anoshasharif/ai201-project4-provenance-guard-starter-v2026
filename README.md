@@ -54,18 +54,24 @@
 ### Signal one — the model signal
 
 **What it measures:**
+The model signal uses GPT-2 to measure how predictable a piece of writing is. It calculates perplexity and converts it into a score between 0 and 1, where higher scores indicate more AI-like writing.
 
 **Why that might differ between human and AI writing:**
+AI-generated writing can contain predictable word choices and sentence structures, while human writing may contain more unusual vocabulary and unexpected phrasing.
 
 **What it can't see:**
+Predictability does not prove authorship. Human writing that uses simple language may receive a high AI score, while creative or unusual AI-generated writing may receive a low score. This creates a risk of falsely accusing human writers.
 
 ### Signal two — the style signal
 
 **What it measures:**
+The style signal measures three writing characteristics: sentence length variation, vocabulary diversity, and punctuation density. These measurements are combined into a score between 0 and 1, where higher scores indicate more AI-like writing.
 
 **Why that might differ between human and AI writing:**
+AI-generated writing may have more consistent sentence lengths and repetitive writing patterns. Human writing may show greater variation in sentence structure and vocabulary.
 
 **What it can't see:**
+The style signal cannot understand the meaning or authorship of text. Writing style varies between people, genres, and languages. A human writer may naturally use consistent sentences, while AI-generated text can be edited to imitate human writing. Vocabulary diversity also depends on text length.
 
 ### The combining rule
 
@@ -73,8 +79,23 @@
      signals disagree? -->
 
 **The rule:**
+I use a weighted average of the model signal and style signal. Since the model signal showed greater separation between my initial human and AI writing samples, I gave it slightly more weight.
+
+When the two signals differ by more than 0.30, I move the combined score halfway toward 0.50 to reflect uncertainty. This helps prevent either signal from making a strong decision when the two disagree substantially.
+
+The final combined score is limited to the range 0 to 1.
 
 **The numbers:**
+
+Model signal weight: 0.60 (60%)
+
+Style signal weight: 0.40 (40%)
+
+Disagreement threshold: greater than 0.30
+
+Disagreement adjustment: (weighted average + 0.50) / 2
+
+Final score range: 0.00–1.00
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -83,6 +104,45 @@
 
 **A case where my two signals split, and what my rule does with it:**
 
+
+For my AI-generated conversational writing sample, the model signal was 0.8022, while the style signal was 0.4972. The difference between the two signals was 0.3050, which exceeded my disagreement threshold of 0.30.
+
+Using my 60% model and 40% style weighting, the initial weighted score was 0.6802. Because the signals disagreed substantially, my combining rule moved the score halfway toward 0.50, producing a final combined score of 0.5901.
+
+This placed the sample in the unsure category rather than confidently labeling it AI-generated. The example shows how my rule reduces overconfidence, but it can also make the detector less decisive.
+
+
+### Milestone 4: Calibration Results
+
+I tested both the GPT-2 model signal and the stylometry signal on four different writing samples to evaluate how well the combined scoring system distinguishes AI-generated and human-written text.
+
+| Sample | Model Score | Style Score | Combined Score |
+|---|---|---|---|
+| Clearly AI-generated text | 0.6607 | 0.4442 | 0.5741 |
+| Human-written poem | 0.1493 | 0.4186 | 0.2570 |
+| Formal human-written academic update | 0.4576 | 0.5002 | 0.4746 |
+| AI-generated conversational text | 0.8022 | 0.4972 | 0.5901 |
+
+#### Findings
+
+- The human-written poem received a low combined score of 0.2570, correctly falling into the human category.
+- The formal academic update received a combined score of 0.4746, placing it in the unsure category despite being human-written.
+- The clearly AI-generated sample received a combined score of 0.5741, placing it in the unsure category.
+- The conversational AI-generated sample received a combined score of 0.5901. Its model and style signals disagreed by 0.3050, triggering the disagreement adjustment.
+
+#### Limitations and Blind Spots
+
+The two signals do not always agree. The model signal can strongly favor AI while the stylometry signal remains uncertain. The disagreement adjustment reduces overconfident classifications but can also move AI-generated writing into the unsure category.
+
+Formal human writing can also receive an uncertain score because structured, polished language may resemble AI-generated writing.
+
+These scores are heuristic indicators rather than verified probabilities of authorship. More calibration samples and threshold tuning would be needed before using the system for reliable authorship decisions.
+
+#### Audit Logging
+
+The `/submit` endpoint now calculates the model score, style score, and combined score. All three values are recorded in the audit log and returned in the API response.
+
+The `/log` endpoint was tested successfully and confirmed that the new audit entry contains all three scores.
 
 
 ---

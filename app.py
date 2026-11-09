@@ -31,6 +31,8 @@ from flask import Flask, jsonify, request
 import audit
 import config
 from detector import model_signal
+from stylometry import style_signal
+from scoring import combine_signals
 
 app = Flask(__name__)
 
@@ -205,16 +207,19 @@ def submit():
     text = payload.get("text", "")
     creator_id = payload.get("creator_id", "")
 
-    score = model_signal(text)
+    model_score = model_signal(text)
+    style_score = style_signal(text)
+    combined_score = combine_signals(model_score, style_score)
+
     content_id = str(uuid.uuid4())
 
     audit.log_decision(
         content_id=content_id,
         creator_id=creator_id,
         guess="unsure",
-        model_score=score,
-        style_score=0.0,
-        combined_score=None,
+        model_score=model_score,
+        style_score=style_score,
+        combined_score=combined_score,
         label="Unable to determine authorship."
     )
 
@@ -223,8 +228,9 @@ def submit():
         "guess": "unsure",
         "confidence": 0.5,
         "label": "Unable to determine authorship.",
-        "model_score": score,
-        "style_score": 0.0
+        "model_score": model_score,
+        "style_score": style_score,
+        "combined_score": combined_score
     }), 200
 
 
