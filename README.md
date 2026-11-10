@@ -40,6 +40,19 @@
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
 
 
+Provenance Guard is a text analysis application that examines writing and estimates whether it shows patterns associated with AI-generated or human-written text. It uses two signals and provides a reader-friendly classification. The system also records decisions and allows writers to appeal results.
+
+**How the system works:**
+
+1. A writer submits text and a creator ID through the `/submit` endpoint.
+2. The GPT-2 model analyzes the text and calculates a model signal based on perplexity.
+3. The stylometry component examines sentence length variation, vocabulary diversity, and punctuation density to calculate a style signal.
+4. The system combines both signals using a weighted scoring rule in `scoring.py::combine_signals`.
+5. The combined score is converted into one of three labels: human, unsure, or AI, with an explanation that a reader can understand.
+6. The submission receives a unique content ID, and the decision, scores, and label are recorded in the audit log.
+7. If a writer disagrees with the result, they can submit their content ID and reasoning through `/appeal`. The system records the appeal with an `under_review` status while preserving the original decision.
+
+The `/log` endpoint allows the decision and appeal history to be reviewed. The detector's scores are estimates based on writing patterns, not definitive proof of authorship.
 
 ---
 
@@ -289,17 +302,18 @@ The appeal endpoint was also tested successfully. It accepted a valid content ID
 
 ## How I Used AI
 
-**Moment 1**
+**Moment 1 — Implementing the Dual-Signal Scoring System**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- **What I asked for:** I asked ChatGPT to help me implement a second writing-analysis signal using sentence length variation, vocabulary diversity, and punctuation density. I also asked how to combine this signal with my existing GPT-2 model signal.
+- **What came back:** ChatGPT provided Python code for the stylometry calculations and a weighted scoring approach using 60% model signal and 40% style signal. It also suggested moving the combined score toward 0.50 when the signals disagreed by more than 0.30.
+- **What I changed:** I implemented the calculations in `stylometry.py`, configured the weights in `config.py`, and added the combining rule in `scoring.py`. I tested the signals on AI-generated and human-written samples, recorded the results, and documented limitations such as disagreement between the signals.
 
-**Moment 2**
+**Moment 2 — Implementing Labels and the Appeal Endpoint**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- **What I asked for:** I asked ChatGPT to help me create understandable Human, Unsure, and AI labels and implement an appeal endpoint that allows writers to challenge a classification.
+- **What came back:** ChatGPT suggested reader-friendly label descriptions and Python code for `score_to_label()` and the `/appeal` endpoint. It also explained how to validate a content ID and record an appeal using the existing audit functions.
+- **What I changed:** I updated `scoring.py` with the three labels and connected them to `/submit` in `app.py`. I implemented the appeal endpoint, tested it using a real content ID, and verified that the audit log recorded the appeal with an `under_review` status. I also documented a false-positive risk after a human-written poem received an AI classification.
+
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
