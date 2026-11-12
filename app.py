@@ -154,7 +154,7 @@ def health():
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
 @app.post("/submit")
-# @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
+@limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
     """
     Take a piece of text, decide about it, log the decision, answer.
@@ -206,6 +206,13 @@ def submit():
 
     text = payload.get("text", "")
     creator_id = payload.get("creator_id", "")
+
+    if not isinstance(text, str) or not text.strip():
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="missing_or_empty_text"
+    )
+    return jsonify({"error": "Text is required."}), 400
 
     model_score = model_signal(text)
     style_score = style_signal(text)

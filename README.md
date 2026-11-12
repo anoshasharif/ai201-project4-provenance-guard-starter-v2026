@@ -321,26 +321,23 @@ The appeal endpoint was also tested successfully. It accepted a valid content ID
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 10 per minute, 200 per day
 
-**Why those numbers and not others:**
-<!-- Think about two people: a real writer submitting their own work a few
-     times an hour, and a script sending a thousand variations to map your
-     thresholds. Your numbers have to be liveable for the first and hostile to
-     the second. -->
+**Why those numbers and not others:** I chose 10 requests per minute because a real writer may submit several drafts, while an automated script attempting to test hundreds of variations should be slowed down. The 200-request daily limit allows regular use while restricting large-scale automated testing.
 
-**What a caller counts as:** <!-- per address, or per creator_id? They fail
-differently — one script can look like a thousand callers, and one household
-can look like one. -->
+**What a caller counts as:** The limiter uses the caller's IP address. This means multiple users sharing an IP address may share the same limit, while someone using different IP addresses may bypass the restriction.
 
 **The run of status codes when I pushed past it:**
 
-<!-- python run_attacks.py --flood 15 -->
-
+```text
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
 ```
 
-```
+**Result:** 15 submissions were sent using `python run_attacks.py --flood 15`. The first 10 succeeded, and the final 5 returned HTTP 429, confirming that the rate limiter works.
 
+**Report:** `results/flood_2026-11-11_2119.md`
+
+**Limitation:** The in-memory rate limiter resets when the server restarts and does not share counts across multiple server instances.
 ---
 
 ## Attack Run — Before
