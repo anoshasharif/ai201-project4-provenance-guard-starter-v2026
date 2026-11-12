@@ -211,8 +211,18 @@ def submit():
         audit.log_rejection(
             creator_id=creator_id,
             reason="missing_or_empty_text"
-    )
-    return jsonify({"error": "Text is required."}), 400
+        )
+        return jsonify({"error": "Text is required."}), 400
+
+    
+    if len(text) > 10000:
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="text_too_long"
+        )
+        return jsonify({"error": "Text exceeds 10,000 characters"}), 400
+
+
 
     model_score = model_signal(text)
     style_score = style_signal(text)
