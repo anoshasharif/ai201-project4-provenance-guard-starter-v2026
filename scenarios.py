@@ -49,16 +49,18 @@ SCENARIOS = [
     # A bad-input criterion looks like this. Uncomment and adjust if that's one
     # of your five — these are raw request bodies, sent exactly as written.
     #
-    # {
-    #     "name": "bad input",
-    #     "criterion": 3,
-    #     "bodies": [
-    #         {"text": "", "creator_id": "eval_bad_empty"},
-    #         {"creator_id": "eval_bad_missing"},          # no text field at all
-    #         {"text": "word " * 50000, "creator_id": "eval_bad_huge"},
-    #         {"text": None, "creator_id": "eval_bad_null"},
-    #     ],
-    # },
+    {
+        "name": "bad input",
+        "criterion": 5,
+        "bodies": [
+            {"text": "", "creator_id": "eval_bad_empty"},
+            {"creator_id": "eval_bad_missing"},
+            {"text": "word " * 50000, "creator_id": "eval_bad_huge"},
+            {"text": None, "creator_id": "eval_bad_null"},
+            {"text": "   ", "creator_id": "eval_bad_whitespace"},
+        ],
+    },
+
 
     # TODO: add what your remaining criteria need.
     #
