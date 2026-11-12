@@ -30,8 +30,9 @@ SCENARIOS = [
         # things you actually wrote. This is the criterion that matters most and
         # it's meaningless with someone else's prose.
         "texts": [
-            "REPLACE ME with a paragraph you wrote yourself.",
-            "REPLACE ME with another one. Ten pieces is the usual number.",
+            "Sitting inside her house, so nervous I was, unusual for a man immune to stage fright. I fear not a thousand people, but being a perfect man for her, winning the family's confidence, so she can be mine forever.",
+            "In the quiet early morning hours, when the world is fast asleep, the skies pitch black, leaving everything unseen. As my soul descends, seeking to find anything, against the veiled curtains of the sky, I come across a young man.",
+
         ],
     },
     {
@@ -40,9 +41,9 @@ SCENARIOS = [
         # Inputs spread across your score range, so you can check all three
         # labels are actually reachable.
         "texts": [
-            "REPLACE ME with something you're confident is AI-generated.",
-            "REPLACE ME with something you're confident is human-written.",
-            "REPLACE ME with something genuinely borderline.",
+            "Artificial intelligence is transforming industries by automating repetitive tasks, improving efficiency, and enabling data-driven decision-making. Organizations increasingly use AI systems to analyze information, support operations, and improve productivity.",
+            "I spent most of yesterday trying to finish my assignments, but I kept getting distracted. After dinner, I finally sat down, turned off my phone, and managed to finish everything before going to bed.",
+            "The growing use of artificial intelligence in education presents both opportunities and challenges. While AI tools can help students understand difficult concepts, relying on them too heavily may limit independent thinking and problem-solving skills.",
         ],
     },
     # A bad-input criterion looks like this. Uncomment and adjust if that's one
